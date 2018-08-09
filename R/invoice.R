@@ -1,6 +1,43 @@
-library(togglr)
-library(googledrive)
-library(googlesheets)
+#' Create an invoice object
+#' 
+#' @param month specify month for a one-month invoice
+#' @param year invoice year
+#' @param since if month is not specified, beginning of invoice period
+#' @param until end of invoice period
+#' @param date invoice date, defaults to the day after until
+#' @param client client name
+#' @param address client address
+#' @param expenses amount of expenses for current month
+#' @param template_key the google drive key for the template to use.
+#'    must be in your google drive
+#' @param inv_number invoice number/code
+#' 
+#' @return an invoice object, a tibble with the following attributes:
+#' \itemize{
+#'    \item {fields} {the various invoice-specific values, such as date
+#'    and address}
+#'    \item {tmpl} {google drive document key of the template}
+#'    \item {url} {url of the google sheet generated}
+#' }
+#' 
+#' @examples
+#' \dontrun{
+#' # create an invoice for the latest complete calendar month using the default
+#' # client, address, and template
+#' invoice()
+#' 
+#' # create an invoice for this month to date
+#' invoice(
+#'   since = lubridate::floor_date(today(),"month"),
+#'   until = lubridate::today()
+#' )
+#' }
+#' 
+#' @export
+#' @import googlesheets
+#' @import googledrive
+#' @importFrom togglr get_dashboard
+
 
 invoice <- function(
   month = NULL,
