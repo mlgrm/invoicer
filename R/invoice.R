@@ -36,6 +36,7 @@
 #' @export
 #' @import googlesheets
 #' @import googledrive
+#' @import tibble
 #' @importFrom togglr get_dashboard
 
 
