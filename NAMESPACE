@@ -3,4 +3,4 @@
 export(invoice)
 import(googledrive)
 import(googlesheets)
-importFrom(togglr,get_dashboard)
+import(tibble)

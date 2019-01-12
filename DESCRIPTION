@@ -5,7 +5,9 @@ Authors@R: person("O", "Milgrim", email = "o@milgrim.net",
                   role = c("aut", "cre"))
 Description: Manipulate data from toggl and other sources to manage billing 
     and invoicing.
-Depends: R (>= 3.2.3)
+Depends: 
+    R (>= 3.2.3),
+    tidyverse
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
