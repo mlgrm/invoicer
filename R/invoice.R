@@ -34,9 +34,7 @@
 #' }
 #' 
 #' @export
-#' @import googlesheets
-#' @import googledrive
-#' @import tibble
+#' @importFrom retryr retry
 
 
 invoice <- function(
