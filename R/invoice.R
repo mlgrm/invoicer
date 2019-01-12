@@ -37,7 +37,6 @@
 #' @import googlesheets
 #' @import googledrive
 #' @import tibble
-#' @importFrom togglr get_dashboard
 
 
 invoice <- function(
@@ -55,9 +54,10 @@ invoice <- function(
   expenses = 0,
   template_key = getOption("invoicer_template_key", 
                            stop("template key must be specified")),
-  inv_num = 0
+  inv_num = 1
 ){
-  smry <- get_dashboard(since = since, until = until)$synthese
+  smry <- togglr::get_dashboard(since = since, until = until)$synthese
+  smry <- smry[!is.na(smry$client),]
   smry <- smry[smry$client == client,]
   if(nrow(smry) == 0){
     message("no results for month ", month)
@@ -65,7 +65,7 @@ invoice <- function(
   }
   proj_code <- sub("\\s.+$", "", smry$project)
   proj_desc <- sub("^[A-Z0-9]+\\s+","", smry$project)
-  recs <- tibble(
+  recs <- tibble::tibble(
     inum = 1:nrow(smry), 
     proj_code = proj_code, 
     proj_desc = proj_desc,
@@ -79,17 +79,19 @@ invoice <- function(
       format(until, "%d.%m.%Y")
     ),
     date = format(date,"%d.%m.%Y"),
-    inv_num = inv_num,
+    inv_num = str_glue("{client_code(client)}-{inv_num}"),
     client = client,
     address = address,
     fees_total = sum(recs$total),
     expenses = expenses,
     inv_total = expenses + sum(recs$total)
   )
-  sh <- gs_key(template_key)
+  
+  sh <- retry(googlesheets::gs_key)(template_key)
+  
   
   # replace keys with field values in tmpl
-  tmpl <- gs_read(sh,"Fees",col_names = F)
+  tmpl <- googlesheets::gs_read(sh,"Fees",col_names = F)
   tmpl[is.na(tmpl)] <- ""
   for(fn in names(fields)){
     addr <- which(tmpl==sprintf("${%s}",fn),arr.ind = T)
@@ -97,20 +99,27 @@ invoice <- function(
   }
   
   # create a copy of template and open it into sh
-  sh <- gs_key(
-    drive_cp(
-      as_id(template_key),
+  sh <- retry(googlesheets::gs_key)(
+    retry(googledrive::drive_cp)(
+      retry(googledrive::as_id)(template_key),
       sprintf("Invoice %s - %s", client, format(date,"%Y%m%d"))
     )$id
   )
   
   # overwrite the copy with tmpl
-  sh <- gs_edit_cells(sh,"Fees",tmpl,col_names = F)
+  sh <- retry(googlesheets::gs_edit_cells)(sh,"Fees",tmpl,col_names = F)
   
   # copy recs into the copy at position "recs_anchor"
   anchor <- which(tmpl == "${recs_anchor}", arr.ind = T)
   anchor <- sprintf("R%dC%d",anchor[1],anchor[2])
-  sh <- gs_edit_cells(sh,"Fees", recs, anchor = anchor, col_names = F)
+  sh <- retry(googlesheets::gs_edit_cells)(
+    sh,
+    "Fees", 
+    recs, 
+    anchor = anchor, 
+    col_names = F
+  )
+  browseURL(sh$browser_url)
   sh
 }
 
@@ -118,3 +127,10 @@ get_pdf <- function(key,path="."){
   drive_download(as_id(key),paste0(path,'/',as_dribble(as_id(key))$name,'.pdf'))
 }
 
+client_code <- function(name)
+  name %>% 
+  stringr::str_split("") %>%
+  getElement(1) %>% 
+  map_int(utf8ToInt) %>% sum %>% 
+  {. %% 10000}
+  

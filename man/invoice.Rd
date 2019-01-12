@@ -13,7 +13,7 @@ invoice(month = NULL, year = lubridate::year(lubridate::today()),
   date = until + lubridate::days(1),
   address = getOption("invoicer_default_address", ""), expenses = 0,
   template_key = getOption("invoicer_template_key",
-  stop("template key must be specified")), inv_num = 0)
+  stop("template key must be specified")), inv_num = 1)
 }
 \arguments{
 \item{month}{specify month for a one-month invoice}
