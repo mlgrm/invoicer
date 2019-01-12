@@ -3,7 +3,8 @@
 \name{retry}
 \alias{retry}
 \title{wrap a function so that it keeps executing until none of the specified 
-errors is returned}
+errors is returned, probably most useful for functions that try to use the
+network}
 \usage{
 retry(.f, errors = getOption("retry_errors",
   "Error in the HTTP2 framing layer"), max_tries = 10)
@@ -17,5 +18,6 @@ retry(.f, errors = getOption("retry_errors",
 }
 \description{
 wrap a function so that it keeps executing until none of the specified 
-errors is returned
+errors is returned, probably most useful for functions that try to use the
+network
 }

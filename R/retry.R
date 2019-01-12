@@ -1,5 +1,6 @@
 #' wrap a function so that it keeps executing until none of the specified 
-#' errors is returned
+#' errors is returned, probably most useful for functions that try to use the
+#' network
 #' 
 #' @param .f function to be wrapped
 #' @param errors vector of error messages on whose return we should retry
@@ -20,7 +21,7 @@ retry <- function(.f, errors = getOption("retry_errors",
     }){
       # if it did, makes sure we haven't exceeded our max
       if(tries > max_tries) stop("too many failures")
-      # then signals a retry
+      # then signals a retry (continues loop)
       message("got error \"", error, "\", retrying...")
       tries <- tries + 1
     }
